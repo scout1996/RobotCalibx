@@ -1,14 +1,12 @@
-# 复现 RoboDK 机械臂几何校准（Staubli TX2‑90L / TX200）
+本算法复现了 RoboDK 的机器人校准功能：在训练集的**理论校准后精度与 RoboDK 一致**，在测试集的**实测精度接近 Staubli 原厂**。
 
-以 **Ceres Solver** 为核心的几何标定实现，复现了 RoboDK 的机器人校准能力：在相同训练集上**理论结果与 RoboDK 一致**，在独立测试集的**实测精度接近 Staubli 原厂**。
-
-> 参考：RoboDK 机器人校准功能（[https://robodk.com.cn/cn/robot-calibration）](https://robodk.com.cn/cn/robot-calibration）)
+> 参考：RoboDK 机器人校准功能（[https://robodk.com.cn/cn/robot-calibration）](https://robodk.com.cn/cn/robot-calibration)
 
 ---
 
 ## 特性
 
-* 支持 **SDH 参数子集**选择（每关节 `α/a/θ/d` 可独立选择）。
+* 支持 **SDH 参数子集**选择（每关节 `α/a/θ/d` 可独立选择是否参与校准）。
 * **Base→World** 与 **Tool→Flange** 外参与 DH 参数 **联合估计**。
 * 残差为 TCP **三维位置**（mm），输出统计与直方图对比。
 * 提供共垂线求解与可视化脚本，便于复核过程。
@@ -36,43 +34,106 @@
 ## 校准效果
 
 ### 实验对象：TX2-90L 机械臂
-
 #### 机械臂简介与原厂精度
-<figure>
-  <img src="doc/TX2-90L/TX2-90L简介.png" alt="图片1" width="80%">
-</figure>
+<center>
+<img src="https://i-blog.csdnimg.cn/direct/fbbfb34f8a9a4edca44213ab31c57b07.png#pic_center" width="60%" />
+</center>
 
 *数据来源：robodk.com/robot/Staubli/TX2-90L*
 
-![TX2-90L 原厂精度](doc/TX2-90L/原厂校准位置精度截图-TX2-90L.png)
+![在这里插入图片描述](https://i-blog.csdnimg.cn/direct/f63071367bed4c68bed4d186208fb1b5.png#pic_center)
+
 *Staubli 原厂绝对定位精度：全工作空间 mean 0.07 mm、90%max 0.11 mm；在 508×508×508 mm 立方体子域内 mean 0.05 mm、90%max 0.08 mm。*
-*数据来源：*[*doc/TX2-90L/AbsoluteCalibrationQualityReport_TX2-90L.pdf*](doc/TX2-90L/AbsoluteCalibrationQualityReport_TX2-90L.pdf)
+*数据来源：*[*代码的工作路径/doc/TX2-90L/AbsoluteCalibrationQualityReport_TX2-90L.pdf*](doc/TX2-90L/AbsoluteCalibrationQualityReport_TX2-90L.pdf)
 
 #### 校准对比与结论
 **绝对定位精度图示（单位：mm）**
+
 <p align="center">
   <figure style="display:inline-block; text-align:center; margin: 0 10px;">
-    <img src="results/TX2-90L/accuracy_stats_hist_TX2-90L.png" alt="图片1" width="80%">
+    <img src="https://i-blog.csdnimg.cn/direct/e1cc356aa5f546ebbf587c3d3b7a0a40.png#pic_center" alt="图片1" width="90%">
     <figcaption>本算法（训练集）校准前、后理论精度直方图</figcaption>
   </figure>
   <figure style="display:inline-block; text-align:center; margin: 0 10px;">
-    <img src="doc/TX2-90L/RoboD校准位置精度截图-TX2-90L.png" alt="图片2" width="100%">
+    <img src="https://i-blog.csdnimg.cn/direct/f51f99b2fda64589950b29b52e336056.png#pic_center" alt="图片2" width="100%">
     <figcaption>RoboDK（训练集）校准前、后理论精度直方图</figcaption>
   </figure>
 </p>
 
 **绝对定位精度数据（单位：mm）**
 相同颜色为对比项。
+<table border="1" cellspacing="0" cellpadding="6" align="center">
+  <thead>
+    <tr>
+      <th align="center">算法</th>
+      <th align="center">数据集</th>
+      <th align="center">校准状态</th>
+      <th align="center">mean</th>
+      <th align="center">max</th>
+      <th align="center">90%max</th>
+      <th align="center">σ</th>
+      <th align="center">6σ</th>
+      <th align="center">num of points</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td rowspan="3" align="center">本算法</td>
+      <td bgcolor="#FFF2CC" align="center">训练集</td>
+      <td bgcolor="#FFF2CC" align="center">校准前（理论数值）</td>
+      <td bgcolor="#FFF2CC" align="center">0.466283</td>
+      <td bgcolor="#FFF2CC" align="center">0.874976</td>
+      <td bgcolor="#FFF2CC" align="center">0.647841</td>
+      <td bgcolor="#FFF2CC" align="center">0.152851</td>
+      <td bgcolor="#FFF2CC" align="center">0.917108</td>
+      <td bgcolor="#FFF2CC" align="center">60</td>
+    </tr>
+    <tr>
+      <td bgcolor="#E2EFDA" align="center">训练集</td>
+      <td bgcolor="#E2EFDA" align="center">校准后（理论数值）</td>
+      <td bgcolor="#E2EFDA" align="center">0.039163</td>
+      <td bgcolor="#E2EFDA" align="center">0.098429</td>
+      <td bgcolor="#E2EFDA" align="center">0.062382</td>
+      <td bgcolor="#E2EFDA" align="center">0.017692</td>
+      <td bgcolor="#E2EFDA" align="center">0.106153</td>
+      <td bgcolor="#E2EFDA" align="center">60</td>
+    </tr>
+    <tr>
+      <td bgcolor="#FCE4D6" align="center">测试集</td>
+      <td bgcolor="#FCE4D6" align="center">校准后（实际测量）</td>
+      <td bgcolor="#FCE4D6" align="center">0.0509466</td>
+      <td bgcolor="#FCE4D6" align="center">0.1020001</td>
+      <td bgcolor="#FCE4D6" align="center">0.0838984</td>
+      <td bgcolor="#FCE4D6" align="center">&mdash;</td>
+      <td bgcolor="#FCE4D6" align="center">&mdash;</td>
+      <td bgcolor="#FCE4D6" align="center">40</td>
+    </tr>
+    <tr>
+      <td rowspan="2" align="center">RoboDK</td>
+      <td bgcolor="#FFF2CC" align="center">训练集</td>
+      <td bgcolor="#FFF2CC" align="center">校准前（理论数值）</td>
+      <td bgcolor="#FFF2CC" align="center">0.466</td>
+      <td bgcolor="#FFF2CC" align="center">0.875</td>
+      <td bgcolor="#FFF2CC" align="center">&mdash;</td>
+      <td bgcolor="#FFF2CC" align="center">0.154</td>
+      <td bgcolor="#FFF2CC" align="center">0.929</td>
+      <td bgcolor="#FFF2CC" align="center">60</td>
+    </tr>
+    <tr>
+      <td bgcolor="#E2EFDA" align="center">训练集</td>
+      <td bgcolor="#E2EFDA" align="center">校准后（理论数值）</td>
+      <td bgcolor="#E2EFDA" align="center">0.039</td>
+      <td bgcolor="#E2EFDA" align="center">0.098</td>
+      <td bgcolor="#E2EFDA" align="center">&mdash;</td>
+      <td bgcolor="#E2EFDA" align="center">0.018</td>
+      <td bgcolor="#E2EFDA" align="center">0.093</td>
+      <td bgcolor="#E2EFDA" align="center">60</td>
+    </tr>
+  </tbody>
+</table>
 
-|  算法  |                        数据集                        |                         校准状态                          |                          mean                           |                           max                           |                         90%max                          |                           σ                            |                           6σ                           |                  num of points                   |
-| :----: | :--------------------------------------------------: | :-------------------------------------------------------: | :-----------------------------------------------------: | :-----------------------------------------------------: | :-----------------------------------------------------: | :----------------------------------------------------: | :----------------------------------------------------: | :----------------------------------------------: |
-| 本算法 | <span style="background-color:#FFF2CC">训练集</span> | <span style="background-color:#FFF2CC">校准前（理论数值） | <span style="background-color:#FFF2CC">0.466283</span>  | <span style="background-color:#FFF2CC">0.874976</span>  | <span style="background-color:#FFF2CC">0.647841</span>  | <span style="background-color:#FFF2CC">0.152851</span> | <span style="background-color:#FFF2CC">0.917108</span> | <span style="background-color:#FFF2CC">60</span> |
-|        |    <span style="background-color:#E2EFDA">训练集     | <span style="background-color:#E2EFDA">校准后（理论数值） | <span style="background-color:#E2EFDA">0.039163</span>  | <span style="background-color:#E2EFDA">0.098429</span>  | <span style="background-color:#E2EFDA">0.062382</span>  | <span style="background-color:#E2EFDA">0.017692</span> | <span style="background-color:#E2EFDA">0.106153</span> | <span style="background-color:#E2EFDA">60</span> |
-|        |    <span style="background-color:#FCE4D6">测试集     | <span style="background-color:#FCE4D6">校准后（实际测量） | <span style="background-color:#FCE4D6">0.0509466</span> | <span style="background-color:#FCE4D6">0.1020001</span> | <span style="background-color:#FCE4D6">0.0838984</span> |    <span style="background-color:#FCE4D6">—</span>     |    <span style="background-color:#FCE4D6">—</span>     | <span style="background-color:#FCE4D6">40</span> |
-| RoboDK |    <span style="background-color:#FFF2CC">训练集     | <span style="background-color:#FFF2CC">校准前（理论数值） |   <span style="background-color:#FFF2CC">0.466</span>   |   <span style="background-color:#FFF2CC">0.875</span>   |     <span style="background-color:#FFF2CC">—</span>     |  <span style="background-color:#FFF2CC">0.154</span>   |  <span style="background-color:#FFF2CC">0.929</span>   | <span style="background-color:#FFF2CC">60</span> |
-|        |    <span style="background-color:#E2EFDA">训练集     | <span style="background-color:#E2EFDA">校准后（理论数值） |   <span style="background-color:#E2EFDA">0.039</span>   |   <span style="background-color:#E2EFDA">0.098</span>   |     <span style="background-color:#E2EFDA">—</span>     |  <span style="background-color:#E2EFDA">0.018</span>   |  <span style="background-color:#E2EFDA">0.093</span>   | <span style="background-color:#E2EFDA">60</span> |
 
-> 原始数据与报表见 `RobotCalib/doc/TX2-90L/` 与 `RobotCalib/results/TX2-90L/`。
+> 原始数据与报表见 `代码的工作路径/RobotCalib/doc/TX2-90L/` 与 `代码的工作路径/RobotCalib/results/TX2-90L/`。
 
 **要点：**
 
@@ -85,26 +146,28 @@
 
 #### 机械臂简介与原厂精度
 
-<figure>
-  <img src="doc/TX200/TX200简介.png" alt="图片1" width="80%">
-</figure>
+<center>
+<img src="https://i-blog.csdnimg.cn/direct/51a58bb8e4ce4777a9fb149fbf8e1c60.png#pic_center" width="60%" />
+</center>
 
 *数据来源：robodk.com/robot/Staubli/TX200*
 
-![TX200 原厂精度](doc/TX200/原厂校准位置精度截图-TX200.png)
+![在这里插入图片描述](https://i-blog.csdnimg.cn/direct/553040aa8ffb464daf98df0447d71e19.png#pic_center)
+
+
 *Staubli 原厂绝对定位精度：全工作空间 mean 0.17 mm、90%max 0.26 mm；在 847×847×847 mm 立方体子域内 mean 0.13 mm、90%max 0.18 mm。*
-*数据来源：*[*doc/TX200/AbsoluteCalibrationQualityReport_TX200.pdf*](doc/TX200/AbsoluteCalibrationQualityReport_TX200.pdf)
+*数据来源：*[*代码的工作路径/doc/TX200/AbsoluteCalibrationQualityReport_TX200.pdf*](doc/TX200/AbsoluteCalibrationQualityReport_TX200.pdf)
 
 
 #### 校准对比与结论
 **绝对定位精度图示（单位：mm）**
 <p align="center">
   <figure style="display:inline-block; text-align:center; margin: 0 10px;">
-    <img src="results/TX200/accuracy_stats_hist_TX200.png" alt="图片1" width="80%">
+    <img src="https://i-blog.csdnimg.cn/direct/e44e69854400422d925581134149a34a.png#pic_center" alt="图片1" width="90%">
     <figcaption>本算法（训练集）校准前、后理论精度直方图</figcaption>
   </figure>
   <figure style="display:inline-block; text-align:center; margin: 0 10px;">
-    <img src="doc/TX200/RoboDK校准位置精度截图-TX200.png" alt="图片2" width="100%">
+    <img src="https://i-blog.csdnimg.cn/direct/7a93b172183747f7a393c65c6003d876.png#pic_center" alt="图片2" width="100%">
     <figcaption>RoboDK（训练集）校准前、后理论精度直方图</figcaption>
   </figure>
 </p>
@@ -112,27 +175,88 @@
 **绝对定位精度数据（单位：mm）**
 相同颜色为对比项。
 
-|  算法  |                        数据集                        |                             校准状态                             |                          mean                          |                          max                           |                         90%max                         |                           σ                            |                           6σ                           |                   num of points                   |
-| :----: | :--------------------------------------------------: | :--------------------------------------------------------------: | :----------------------------------------------------: | :----------------------------------------------------: | :----------------------------------------------------: | :----------------------------------------------------: | :----------------------------------------------------: | :-----------------------------------------------: |
-| 本算法 | <span style="background-color:#FFF2CC">训练集</span> | <span style="background-color:#FFF2CC">校准前（理论数值）</span> | <span style="background-color:#FFF2CC">1.285361</span> | <span style="background-color:#FFF2CC">2.141703</span> | <span style="background-color:#FFF2CC">1.673369</span> | <span style="background-color:#FFF2CC">0.306290</span> | <span style="background-color:#FFF2CC">1.837739</span> | <span style="background-color:#FFF2CC">107</span> |
-|        | <span style="background-color:#E2EFDA">训练集</span> | <span style="background-color:#E2EFDA">校准后（理论数值）</span> | <span style="background-color:#E2EFDA">0.142412</span> | <span style="background-color:#E2EFDA">0.487590</span> | <span style="background-color:#E2EFDA">0.213881</span> | <span style="background-color:#E2EFDA">0.071394</span> | <span style="background-color:#E2EFDA">0.428367</span> | <span style="background-color:#E2EFDA">107</span> |
-|        | <span style="background-color:#FCE4D6">测试集</span> | <span style="background-color:#FCE4D6">校准后（实际测量）</span> | <span style="background-color:#FCE4D6">0.143818</span> | <span style="background-color:#FCE4D6">0.501294</span> | <span style="background-color:#FCE4D6">0.246057</span> |    <span style="background-color:#FCE4D6">—</span>     |    <span style="background-color:#FCE4D6">—</span>     | <span style="background-color:#FCE4D6">44</span>  |
-| RoboDK | <span style="background-color:#FFF2CC">训练集</span> | <span style="background-color:#FFF2CC">校准前（理论数值）</span> |  <span style="background-color:#FFF2CC">1.269</span>   |  <span style="background-color:#FFF2CC">2.128</span>   |    <span style="background-color:#FFF2CC">—</span>     |  <span style="background-color:#FFF2CC">0.309</span>   |  <span style="background-color:#FFF2CC">2.196</span>   | <span style="background-color:#FFF2CC">107</span> |
-|        | <span style="background-color:#E2EFDA">训练集</span> | <span style="background-color:#E2EFDA">校准后（理论数值）</span> |  <span style="background-color:#E2EFDA">0.142</span>   |  <span style="background-color:#E2EFDA">0.488</span>   |    <span style="background-color:#E2EFDA">—</span>     |  <span style="background-color:#E2EFDA">0.072</span>   |  <span style="background-color:#E2EFDA">0.358</span>   | <span style="background-color:#E2EFDA">107</span> |
 
+<table border="1" cellspacing="0" cellpadding="6" align="center">
+  <thead>
+    <tr>
+      <th align="center">算法</th>
+      <th align="center">数据集</th>
+      <th align="center">校准状态</th>
+      <th align="center">mean</th>
+      <th align="center">max</th>
+      <th align="center">90%max</th>
+      <th align="center">σ</th>
+      <th align="center">6σ</th>
+      <th align="center">num of points</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td rowspan="3" align="center">本算法</td>
+      <td bgcolor="#FFF2CC" align="center">训练集</td>
+      <td bgcolor="#FFF2CC" align="center">校准前（理论数值）</td>
+      <td bgcolor="#FFF2CC" align="center">1.285361</td>
+      <td bgcolor="#FFF2CC" align="center">2.141703</td>
+      <td bgcolor="#FFF2CC" align="center">1.673369</td>
+      <td bgcolor="#FFF2CC" align="center">0.306290</td>
+      <td bgcolor="#FFF2CC" align="center">1.837739</td>
+      <td bgcolor="#FFF2CC" align="center">107</td>
+    </tr>
+    <tr>
+      <td bgcolor="#E2EFDA" align="center">训练集</td>
+      <td bgcolor="#E2EFDA" align="center">校准后（理论数值）</td>
+      <td bgcolor="#E2EFDA" align="center">0.142412</td>
+      <td bgcolor="#E2EFDA" align="center">0.487590</td>
+      <td bgcolor="#E2EFDA" align="center">0.213881</td>
+      <td bgcolor="#E2EFDA" align="center">0.071394</td>
+      <td bgcolor="#E2EFDA" align="center">0.428367</td>
+      <td bgcolor="#E2EFDA" align="center">107</td>
+    </tr>
+    <tr>
+      <td bgcolor="#FCE4D6" align="center">测试集</td>
+      <td bgcolor="#FCE4D6" align="center">校准后（实际测量）</td>
+      <td bgcolor="#FCE4D6" align="center">0.143818</td>
+      <td bgcolor="#FCE4D6" align="center">0.501294</td>
+      <td bgcolor="#FCE4D6" align="center">0.246057</td>
+      <td bgcolor="#FCE4D6" align="center">&mdash;</td>
+      <td bgcolor="#FCE4D6" align="center">&mdash;</td>
+      <td bgcolor="#FCE4D6" align="center">44</td>
+    </tr>
+    <tr>
+      <td rowspan="2" align="center">RoboDK</td>
+      <td bgcolor="#FFF2CC" align="center">训练集</td>
+      <td bgcolor="#FFF2CC" align="center">校准前（理论数值）</td>
+      <td bgcolor="#FFF2CC" align="center">1.269</td>
+      <td bgcolor="#FFF2CC" align="center">2.128</td>
+      <td bgcolor="#FFF2CC" align="center">&mdash;</td>
+      <td bgcolor="#FFF2CC" align="center">0.309</td>
+      <td bgcolor="#FFF2CC" align="center">2.196</td>
+      <td bgcolor="#FFF2CC" align="center">107</td>
+    </tr>
+    <tr>
+      <td bgcolor="#E2EFDA" align="center">训练集</td>
+      <td bgcolor="#E2EFDA" align="center">校准后（理论数值）</td>
+      <td bgcolor="#E2EFDA" align="center">0.142</td>
+      <td bgcolor="#E2EFDA" align="center">0.488</td>
+      <td bgcolor="#E2EFDA" align="center">&mdash;</td>
+      <td bgcolor="#E2EFDA" align="center">0.072</td>
+      <td bgcolor="#E2EFDA" align="center">0.358</td>
+      <td bgcolor="#E2EFDA" align="center">107</td>
+    </tr>
+  </tbody>
+</table>
 
-> 原始数据与报表见 `RobotCalib/doc/TX200/` 与 `RobotCalib/results/TX200/`。
+> 原始数据与报表见 `代码的工作路径/RobotCalib/doc/TX200/` 与 `代码的工作路径/RobotCalib/results/TX200/`。
 
 **要点：**
 * 与 RoboDK 在同一训练集上的**理论**结果一致量级。
-* **实测**精度位于原厂全域与立方体子域之间；由于训练/测试子域范围较原厂报告更大，误差略有放大属预期。
+* **实测**精度位于原厂全域与立方体子域之间；由于训练/测试子域范围较原厂报告的立方体子域更大，误差略有放大属预期。
 * 测试集位姿分布更复杂，精度略低于训练集理论值。
 ---
 **总体结论**
 在 TX2-90L 与 TX200 两个样例上，本算法成功复现了 RoboDK 的校准能力；写入控制器后的实测绝对精度接近 Staubli 原厂校准水平。
 
 ---
-
 ## 环境依赖
 
 * C++17 编译器（GCC 9+/Clang 10+/MSVC 2019+）
@@ -198,63 +322,6 @@ Usage: RobotCalibration <robot_name: TX2-90L|TX200> <calib_mode: simple|complete
 
 ---
 
-## 数据与配置
-
-### 1) 训练集与测试集
-* **训练集**：用于辨识 DH 参数与 Base/Tool 外参，包含三步：
-
-  1. **机器人校准-BaseSetup.csv**（26 组关节序列）：前 13 组确定 J1 旋转轴，后 13 组确定 J2 旋转轴。
-  2. **机器人校准-ToolSetup.csv**（27 组）：前 13 组确定 J5 旋转轴，后 13 组确定 J6 旋转轴，余 1 组用于确定 TCP 在法兰中的 3D 位置。
-  3. **机器人校准-Calibration.csv**（≥60 组）：用于 DH 参数与坐标系联合优化。
-* **测试集**：≥40 个 TCP 位姿（笛卡尔），用于验证绝对定位精度。
-
-**CSV 格式（12 列，首行表头跳过）**
-
-```
-J1, J2, J3, J4, J5, J6, MX, MY, MZ, _, _, _
-```
-
-* `J1..J6`：关节角（°）；`MX,MY,MZ`：TCP 在测量参考系下的位置（mm）。
-* 列数不足的行会被丢弃。
-
-### 2) DH 参数（YAML）
-
-以每关节的 `alpha/a/theta/d` 描述标准 DH：
-
-```yaml
-DH_parameters:
-  - {alpha: 0.0, a: 0.0, theta: 0.0, d: 0.0}
-  - {alpha: ...}
-  # ...
-```
-
-### 3) 标定选项（YAML）
-
-用布尔开关选择每个关节需要参与标定的项：
-
-```yaml
-calib_option:
-  - {calib_alpha: false, calib_a: true, calib_theta: false, calib_d: true}
-  - {calib_alpha: ...}
-  # ...
-```
-程序会将被选中的 `α/a/θ/d` 组成一条“联合优化参数块”，与 Base/Tool 外参一并进入 Ceres。
-
----
-
-## 运行机制（概要）
-
-* **前向运动学**：按 **标准 DH** 依次累乘，输入关节角会与 `θ` 偏置相加后统一转弧度；使用 `ceres::sin/cos` 支持自动求导。
-* **参数化**：Base→World 与 Tool→Flange 姿态使用四元数表示，在ceres参与优化。
-* **残差**：仅使用 TCP **位置**残差（mm）。
-
-**约定：**
-* 角度：关节输入默认**度**；。
-* 四元数数组顺序为 `[x, y, z, w]`。
-* 坐标：位置单位 mm，右手参考系。
-
----
-
 ## 输出与可视化
 
 运行结束后，`results/<robot_name>/` 下包含：
@@ -264,6 +331,109 @@ calib_option:
   * 原始与优化后的 DH 表
   * 逐样本三维位置误差及统计
 * `accuracy_stats_hist_<robot_name>.png`：校准前后的定位精度对比直方图
+
+示例，OptimalReport_TX2-90L.txt如下：
+```powershell
+========================== Calibration Report ==========================
+
+[1]base2world Transformation( [X,Y,Z]mm|Quaternion[q1-q4] ):
+  331.331991,  349.413195,  429.000644,  -0.000022,  0.002251,  0.001411,  0.999996
+
+[2]tool2flange Transformation( [X,Y,Z]mm|Quaternion[q1-q4] ):
+  24.990101,  0.213438,  14.899634,  0.000000,  0.000000,  0.000000,  1.000000
+
+[3] Original SDH Parameters:
+Joint   Alpha(deg)      a(mm)           theta(deg)      d(mm)           
+------------------------------------------------------------------------
+1       -90.000000      50.000000       0.000000        0.000000        
+2       0.000000        500.000000      -90.000000      0.000000        
+3       90.000000       0.000000        90.000000       50.000000       
+4       -90.000000      0.000000        0.000000        550.000000      
+5       90.000000       0.000000        0.000000        0.000000        
+6       0.000000        0.000000        0.000000        100.000000      
+
+[4] Optimized SDH Parameters:
+Joint   Alpha(deg)      a(mm)           theta(deg)      d(mm)           
+------------------------------------------------------------------------
+1       -89.976980      50.072944       0.000000        0.000000        
+2       0.021435        499.915919      -90.052042      0.000000        
+3       90.007793       -0.258274       90.043030       50.250723       
+4       -90.017136      0.022018        0.113726        549.979965      
+5       90.009449       -0.008709       -0.073612       -0.016915       
+6       0.000000        0.000000        0.000000        100.000000      
+------------------------------------------------------------------------
+
+[5] Measurement Errors (per group):
+  测量1：误差 = 0.026507 mm / 0.664059 mm（校准/未校准）
+  测量2：误差 = 0.022484 mm / 0.473525 mm（校准/未校准）
+  测量3：误差 = 0.048078 mm / 0.593382 mm（校准/未校准）
+  测量4：误差 = 0.017212 mm / 0.286039 mm（校准/未校准）
+  测量5：误差 = 0.027732 mm / 0.647841 mm（校准/未校准）
+  测量6：误差 = 0.032805 mm / 0.217326 mm（校准/未校准）
+  测量7：误差 = 0.035003 mm / 0.285724 mm（校准/未校准）
+  测量8：误差 = 0.047712 mm / 0.182410 mm（校准/未校准）
+  测量9：误差 = 0.079666 mm / 0.328047 mm（校准/未校准）
+  测量10：误差 = 0.063394 mm / 0.456054 mm（校准/未校准）
+  测量11：误差 = 0.034709 mm / 0.391084 mm（校准/未校准）
+  测量12：误差 = 0.022172 mm / 0.455564 mm（校准/未校准）
+  测量13：误差 = 0.036401 mm / 0.372025 mm（校准/未校准）
+  测量14：误差 = 0.030719 mm / 0.494504 mm（校准/未校准）
+  测量15：误差 = 0.054269 mm / 0.580226 mm（校准/未校准）
+  测量16：误差 = 0.034244 mm / 0.375517 mm（校准/未校准）
+  测量17：误差 = 0.008812 mm / 0.634352 mm（校准/未校准）
+  测量18：误差 = 0.035747 mm / 0.420587 mm（校准/未校准）
+  测量19：误差 = 0.048377 mm / 0.445601 mm（校准/未校准）
+  测量20：误差 = 0.062382 mm / 0.520417 mm（校准/未校准）
+  测量21：误差 = 0.043945 mm / 0.516382 mm（校准/未校准）
+  测量22：误差 = 0.028854 mm / 0.294653 mm（校准/未校准）
+  测量23：误差 = 0.040496 mm / 0.220989 mm（校准/未校准）
+  测量24：误差 = 0.012670 mm / 0.412269 mm（校准/未校准）
+  测量25：误差 = 0.098429 mm / 0.802622 mm（校准/未校准）
+  测量26：误差 = 0.034564 mm / 0.312927 mm（校准/未校准）
+  测量27：误差 = 0.057626 mm / 0.691680 mm（校准/未校准）
+  测量28：误差 = 0.017561 mm / 0.374001 mm（校准/未校准）
+  测量29：误差 = 0.037320 mm / 0.463712 mm（校准/未校准）
+  测量30：误差 = 0.050038 mm / 0.525567 mm（校准/未校准）
+  测量31：误差 = 0.038108 mm / 0.874976 mm（校准/未校准）
+  测量32：误差 = 0.046431 mm / 0.425734 mm（校准/未校准）
+  测量33：误差 = 0.027192 mm / 0.575715 mm（校准/未校准）
+  测量34：误差 = 0.016891 mm / 0.355442 mm（校准/未校准）
+  测量35：误差 = 0.048557 mm / 0.327223 mm（校准/未校准）
+  测量36：误差 = 0.056675 mm / 0.637538 mm（校准/未校准）
+  测量37：误差 = 0.069998 mm / 0.400602 mm（校准/未校准）
+  测量38：误差 = 0.086267 mm / 0.289902 mm（校准/未校准）
+  测量39：误差 = 0.021268 mm / 0.472069 mm（校准/未校准）
+  测量40：误差 = 0.035523 mm / 0.566289 mm（校准/未校准）
+  测量41：误差 = 0.035594 mm / 0.565018 mm（校准/未校准）
+  测量42：误差 = 0.036709 mm / 0.637583 mm（校准/未校准）
+  测量43：误差 = 0.026452 mm / 0.207000 mm（校准/未校准）
+  测量44：误差 = 0.024210 mm / 0.485523 mm（校准/未校准）
+  测量45：误差 = 0.051299 mm / 0.372913 mm（校准/未校准）
+  测量46：误差 = 0.053558 mm / 0.368482 mm（校准/未校准）
+  测量47：误差 = 0.036068 mm / 0.304884 mm（校准/未校准）
+  测量48：误差 = 0.022227 mm / 0.426705 mm（校准/未校准）
+  测量49：误差 = 0.045959 mm / 0.338290 mm（校准/未校准）
+  测量50：误差 = 0.064172 mm / 0.386015 mm（校准/未校准）
+  测量51：误差 = 0.026428 mm / 0.523266 mm（校准/未校准）
+  测量52：误差 = 0.017636 mm / 0.647093 mm（校准/未校准）
+  测量53：误差 = 0.022520 mm / 0.511791 mm（校准/未校准）
+  测量54：误差 = 0.032559 mm / 0.265368 mm（校准/未校准）
+  测量55：误差 = 0.031090 mm / 0.471388 mm（校准/未校准）
+  测量56：误差 = 0.031606 mm / 0.795395 mm（校准/未校准）
+  测量57：误差 = 0.036189 mm / 0.473452 mm（校准/未校准）
+  测量58：误差 = 0.035285 mm / 0.610204 mm（校准/未校准）
+  测量59：误差 = 0.055424 mm / 0.681401 mm（校准/未校准）
+  测量60：误差 = 0.027973 mm / 0.540605 mm（校准/未校准）
+
+[6]校准结果统计（位置误差，单位：mm）
+            mean       max        90%max     σ         6σ        number_of_points
+------------------------------------------------------------------------------
+校准前      0.466283   0.874976   0.647841   0.152851   0.917108         60
+校准后      0.039163   0.098429   0.062382   0.017692   0.106153         60
+```
+示例，accuracy_stats_hist_TX2-90L.png如下：
+![在这里插入图片描述](https://i-blog.csdnimg.cn/direct/9ff0e1193a734e71a114ad51415e6bd9.png#pic_center)
+
 
 手动生成直方图（可自定义输入报告路径）：
 
@@ -276,7 +446,6 @@ python3 code/scripts/visualize_optimal_report.py results/TX200/OptimalReport_TX2
 ```bash
 python3 code/scripts/visualize_normal_plane.py
 ```
-
 ---
 
 ## Docker（可选）
@@ -295,10 +464,102 @@ docker run --rm -it robotcalib \
 > 如需导出图片到宿主机，确保将 `results/` 目录挂载到宿主机路径。
 
 ---
+## 技术服务
+机械臂绝对精度/外参校准实战落地：**提供线下的校准服务与线上的全量资料包**（原理说明＋完整代码＋实测数据＋软件操作＋一线经验）。**线上可持续答疑。**
 
-## 常见问题
+***商业合作与答疑可加V，***
+<center>
+<img src="https://i-blog.csdnimg.cn/direct/e6a53d366dd040d1be1ff75e63ec8190.jpeg#pic_center" width="50%" />
+</center>
 
-* **CSV 报错/丢行**：确认每行 **12 列**；首行作为表头会被跳过。
-* **四元数方向异常**：注意数组顺序为 `[x,y,z,w]`；报告/配置与内部实现需一致。
-* **与 ZYZ 习惯不一致**：项目内部欧拉角展示用 **XYZ**；如需 ZYZ，请在 I/O 层做格式转换。
-* **编译找不到 `ceres::sin/cos`**：请确保包含 Ceres 头文件并正确链接 `ceres`。
+## 可选的机械臂校准资料包
+[【机械臂校准资料包链接1】](https://m.tb.cn/h.hCHwl4u?tk=ybMU4MoA75u)
+[【机械臂校准资料包链接2】](https://item.taobao.com/item.htm?abbucket=18&id=972519248870&mi_id=00002MijcrKoBT6i-HDsiRWk_0TPFjAzle5pY0ibfARqSfo&ns=1&priceTId=2147882217566465254637112e26e1&skuId=5922849177699&spm=a21n57.1.hoverItem.2&utparam=%7B%22aplus_abtest%22:%222be7285acc65a78b794343adf7718098%22%7D&xxc=taobaoSearch)
+
+
+***线上的全量资料包***（原理说明＋完整代码＋实测数据＋软件操作＋一线经验）包括以下所有内容：
+```powershell
+$ tree
+.
+├── 代码
+│   └── RobotCalib
+│       ├── CMakeLists.txt
+│       ├── README.md
+│       ├── code
+│       │   ├── include
+│       │   │   ├── core
+│       │   │   │   ├── BaseCalib.hpp
+│       │   │   │   ├── NormalCrossCompute.h
+│       │   │   │   ├── RobotCalib.h
+│       │   │   │   └── ToolCalib.hpp
+│       │   │   └── tools
+│       │   │       ├── DataReader.h
+│       │   │       ├── DataStas.h
+│       │   │       ├── Forward.h
+│       │   │       └── MatrixCompute.h
+│       │   ├── scripts
+│       │   │   ├── visualize_normal_plane.py
+│       │   │   └── visualize_optimal_report.py
+│       │   └── source
+│       │       ├── core
+│       │       │   ├── NormalCrossCompute.cpp
+│       │       │   └── RobotCalib.cpp
+│       │       ├── main.cpp
+│       │       └── tools
+│       │           ├── DataReader.cpp
+│       │           ├── DataStas.cpp
+│       │           └── MatrixCompute.cpp
+│       ├── config
+│       │   ├── DH
+│       │   │   ├── TX2-90L-default.yml
+│       │   │   └── TX200-default.yml
+│       │   ├── measured
+│       │   │   ├── TX2-90L
+│       │   │   │   ├── TX2-90L_绝对精度验证结果（测试集）.xlsx
+│       │   │   │   ├── 机器人校准-BaseSetup.csv
+│       │   │   │   ├── 机器人校准-Calibration.csv
+│       │   │   │   └── 机器人校准-ToolSetup.csv
+│       │   │   └── TX200
+│       │   │       ├── TX200_绝对精度验证结果（测试集）.xlsx
+│       │   │       ├── 机器人校准-BaseSetup.csv
+│       │   │       ├── 机器人校准-Calibration.csv
+│       │   │       └── 机器人校准-ToolSetup.csv
+│       │   └── option
+│       │       ├── CalibConfigComplete.yml
+│       │       └── CalibConfigSimple.yml
+│       ├── doc
+│       │   ├── TX2-90L
+│       │   │   ├── AbsoluteCalibrationQualityReport_TX2-90L.pdf
+│       │   │   ├── RoboDK校准报告-TX2-90L.pdf
+│       │   │   ├── RoboD校准位置精度截图-TX2-90L.png
+│       │   │   ├── TX2-90L简介.png
+│       │   │   └── 原厂校准位置精度截图-TX2-90L.png
+│       │   ├── TX200
+│       │   │   ├── AbsoluteCalibrationQualityReport_TX200.pdf
+│       │   │   ├── RoboDK校准报告-TX200.pdf
+│       │   │   ├── RoboDK校准位置精度截图-TX200.png
+│       │   │   ├── TX200简介.png
+│       │   │   └── 原厂校准位置精度截图-TX200.png
+│       │   └── 计算共垂线的算法原理.md
+│       ├── docker
+│       │   └── Dockerfile
+│       └── results
+│           ├── TX2-90L
+│           │   ├── OptimalReport_TX2-90L.txt
+│           │   └── accuracy_stats_hist_TX2-90L.png
+│           └── TX200
+│               ├── OptimalReport_TX200.txt
+│               └── accuracy_stats_hist_TX200.png
+└── 文档
+    ├── robodk软件使用说明
+    │   └── robodk进行机械臂校准的流程.vsdx
+    ├── 校准原理说明
+    │   └── 工业六轴机械臂标定校准原理说明.docx
+    └── 高级工程师经验分享
+        └── staubli机械臂标定校准实施标准操作流程（真实工作经历吐血总结）.docx
+
+28 directories, 49 files
+(base) 
+```
+![在这里插入图片描述](https://i-blog.csdnimg.cn/direct/58ebd50c84394e6cb2298ece49053e4a.png#pic_center)
+![在这里插入图片描述](https://i-blog.csdnimg.cn/direct/90d6fc979afd4aa49fb51853d3890915.png#pic_center)
