@@ -3,6 +3,7 @@
 > 参考：RoboDK 机器人校准功能（[https://robodk.com.cn/cn/robot-calibration）](https://robodk.com.cn/cn/robot-calibration)
 ---
 ## 一分钟读懂解决了啥
+![在这里插入图片描述](https://i-blog.csdnimg.cn/direct/8dbf07c02c57488b91272a627a02f8d7.gif#pic_center)
 
 机械臂出厂有一套“尺寸与装配”参数（DH 表），但现实里总会有**微小偏差**。结果就是：机械臂“以为”自己到了某点，**真实位置**却差了几到几十毫米。**校准**的目的，就是用高精度测量数据**反推出DH参数的这些偏差**，再写回控制器，让机器人之后走位更准。
 
